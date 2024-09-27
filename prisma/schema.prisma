@@ -1,0 +1,41 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  telegramId String       @unique
+  username   String?
+  firstName  String?
+  lastName   String?
+  points     Int          @default(0)
+  referralId String?
+  referredBy String?
+  taskStatus TaskStatus[] // This defines the relation
+  createdAt  DateTime     @default(now())
+}
+
+model TaskStatus {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  taskId    String
+  completed Boolean @default(false)
+
+  user      User   @relation(fields: [userId], references: [id])
+  task      Task   @relation(fields: [taskId], references: [id])
+
+  @@unique([taskId, userId]) // Compound unique index
+}
+
+
+model Task {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  points     Int
+  taskStatus TaskStatus[] // This defines the relation to TaskStatus
+}
